@@ -1,0 +1,57 @@
+.movie-hero {
+  height: 80vh;
+  background-size: cover;
+  background-position: center;
+  color: white;
+}
+
+.overlay {
+  height: 100%;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  gap: 40px;
+  padding: 60px;
+  align-items: center;
+}
+
+.poster {
+  width: 260px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+}
+
+.info {
+  max-width: 650px;
+}
+
+.info h1 {
+  font-size: 42px;
+  margin-bottom: 10px;
+}
+
+.rating {
+  font-size: 18px;
+  margin: 10px 0;
+  color: #f5c518;
+}
+
+.book-btn {
+  margin-top: 25px;
+  padding: 14px 36px;
+  background: #f84464;
+  border: none;
+  color: white;
+  font-size: 17px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.book-btn:hover {
+  background: #d73754;
+}
+
+.loading {
+  color: white;
+  padding: 40px;
+  font-size: 18px;
+}
