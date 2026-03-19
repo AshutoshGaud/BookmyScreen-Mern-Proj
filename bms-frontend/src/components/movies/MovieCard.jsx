@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 
 const MovieCard = ({ movie }) => {
+  console.log(movie);
   const navigate = useNavigate();
 
   const handleClick = () => {
@@ -15,7 +16,7 @@ const MovieCard = ({ movie }) => {
       onClick={handleClick}
     >
       <img
-        src={movie.img}
+        src={movie.posterUrl}
         alt={movie.title}
         className="rounded-lg shadow-md"
       />
@@ -28,6 +29,8 @@ const MovieCard = ({ movie }) => {
       <p className="text-sm text-gray-500 truncate">
         {movie.languages}
       </p>
+      <p
+        className='text-sm text-gray-500 truncate'>{movie.languages.join(" | ")}</p>
     </div>
   );
 };
