@@ -1,22 +1,25 @@
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "../../context/LocationContext";
+import { useAuth } from "../../context/AuthContext"; // ✅ ADD THIS
 import mainLogo from "../../assets/main-icon.png";
 import { FaSearch } from "react-icons/fa";
 import map from "../../assets/pin.gif";
+import SignInModal from "./SignInModel";
 
 const Header = () => {
   const navigate = useNavigate();
   const { location, loading, error } = useLocation();
+  const { toggleModal } = useAuth(); // ✅ ADD THIS
 
   return (
     <div className="w-full text-sm bg-white">
+      
       {/* Top Navbar */}
       <div className="px-4 md:px-8">
         <div className="max-w-screen-xl mx-auto flex justify-between items-center py-3">
           
           {/* LEFT SIDE */}
           <div className="flex items-center space-x-4">
-            {/* ✅ CLICKABLE LOGO */}
             <img
               src={mainLogo}
               alt="logo"
@@ -24,11 +27,10 @@ const Header = () => {
               onClick={() => navigate("/")}
             />
 
-            {/* SEARCH BAR */}
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search for Movies, Events, Plays, Sports and Activities"
+                placeholder="Search..."
                 className="border border-gray-300 rounded px-4 py-1.5 w-[400px] text-sm outline-none"
               />
               <FaSearch className="absolute right-2 top-2.5 text-gray-500" />
@@ -37,19 +39,22 @@ const Header = () => {
 
           {/* RIGHT SIDE */}
           <div className="flex items-center space-x-6">
-            <div className="text-sm font-medium cursor-pointer flex items-center space-x-2">
+            <div className="flex items-center space-x-2 cursor-pointer">
               <img src={map} alt="location" className="w-8 h-8" />
               <p>
                 {loading
                   ? "Loading..."
                   : error
                   ? "Select City"
-                  : location || "Select City"}{" "}
-                ▼
+                  : location || "Select City"} ▼
               </p>
             </div>
 
-            <button className="bg-[#f84464] cursor-pointer text-white px-4 py-1.5 rounded text-sm">
+            {/* ✅ FIXED BUTTON */}
+            <button
+              onClick={toggleModal}   // 🔥 MAIN FIX
+              className="bg-[#f84464] cursor-pointer text-white px-4 py-1.5 rounded text-sm"
+            >
               Sign in
             </button>
           </div>
@@ -76,6 +81,9 @@ const Header = () => {
           </div>
         </div>
       </div>
+
+      {/* ✅ Modal */}
+      <SignInModal />
     </div>
   );
 };

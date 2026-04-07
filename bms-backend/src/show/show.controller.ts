@@ -23,10 +23,10 @@ export const getShowsByMovieDateLocation = async (
     const { movieId, state, date } = req.query;
 
     const shows = await ShowService.getShowsByMovieDateLocation(
-      movieId as string,
-      date as string,
-      state as string
-    );
+  movieId as string,
+  state as string,
+  date as string
+);
 
     res.status(200).json(shows);
   } catch (error) {

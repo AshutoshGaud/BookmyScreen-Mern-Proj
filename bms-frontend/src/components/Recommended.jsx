@@ -11,17 +11,19 @@ const Recommended = () => {
   const safeCity = city || "mumbai";
 
   const handleNavigate = (movie) => {
-    if (!movie?.title) return;
+  if (!movie?.title) return;
 
-    const formattedTitle = movie.title
-      .toLowerCase()
-      .replace(/[^a-z0-9 ]/g, "")
-      .replace(/\s+/g, "-");
+  const formattedTitle = movie.title
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]/g, "")
+    .replace(/\s+/g, "-");
 
-    const movieId = movie._id || movie.id;
+  const movieId = movie._id || movie.id;
 
-    navigate(`/movies/${safeCity}/${formattedTitle}/${movieId}/ticket`);
-  };
+  const state = "Maharashtra"; // ✅ fix
+
+  navigate(`/movies/${state}/${formattedTitle}/${movieId}/ticket`);
+};
 
   const {
     data: recMovies = [],

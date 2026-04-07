@@ -16,3 +16,7 @@ import { axioswrapper } from "./axiosWrapper";
     });
     export const getShowById = (data) => axioswrapper.get(`/shows/${data}`);
  
+    //Authentication APIS
+    export const sendOTP = (data) => axioswrapper.post("/auth/send-otp",data);
+    export const verifyOTP =(data) => axioswrapper.post("/auth/verify-otp",data);
+    export const activate = ({id, ...data}) => axioswrapper.post(`/user/${id}/activate`, data);

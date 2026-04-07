@@ -3,19 +3,22 @@ import dayjs from "dayjs";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { getshowsByMovieAndLocation } from "../../apis/movies";
 import { useLocation } from "../../context/LocationContext";
+import { useNavigate } from "react-router-dom";
 
 const TheaterTimings = ({ movieId }) => {
+  const navigate = useNavigate(); // ✅ FIXED
   const { location } = useLocation();
 
-  // 🔥 state → city fix
-  const city = location === "Maharashtra" ? "mumbai" : location;
+  const state = location || "Maharashtra";
 
-  const today = dayjs();
+  const today = dayjs("2026-01-15");
+
   const [selectedDate, setSelectedDate] = useState(today);
 
   const formattedDate = selectedDate.format("DD-MM-YYYY");
 
-  const next7days = Array.from({ length: 7 }, (_, i) =>
+  // ✅ next 7 days
+  const next7days = [...Array(7)].map((_, i) =>
     today.add(i, "day")
   );
 
@@ -24,13 +27,11 @@ const TheaterTimings = ({ movieId }) => {
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["show", movieId, city, formattedDate],
+    queryKey: ["show", movieId, state, formattedDate],
     queryFn: () =>
-      getshowsByMovieAndLocation(movieId, city, formattedDate),
+      getshowsByMovieAndLocation(movieId, state, formattedDate),
     placeholderData: keepPreviousData,
   });
-
-  console.log(showData);
 
   if (isLoading) return <p className="p-4">Loading shows...</p>;
   if (isError)
@@ -38,7 +39,7 @@ const TheaterTimings = ({ movieId }) => {
 
   return (
     <>
-      {/* Date Buttons */}
+      {/* Dates */}
       <div className="flex items-center gap-2 mb-4 overflow-x-auto py-4 px-2">
         {next7days.map((date, i) => {
           const isSelected = selectedDate.isSame(date, "day");
@@ -61,7 +62,7 @@ const TheaterTimings = ({ movieId }) => {
         })}
       </div>
 
-      {/* Theater List */}
+      {/* Theaters */}
       <div className="space-y-8 px-4 mb-10">
         {showData?.length === 0 && (
           <p className="text-center text-gray-500">
@@ -73,30 +74,45 @@ const TheaterTimings = ({ movieId }) => {
           <div key={i}>
             <div className="flex items-start gap-3 mb-2">
               <img
-                src={curr.theatre?.logo}
+                src={curr.theater?.theaterDetails?.logo}
                 alt="logo"
                 className="w-8 h-8"
               />
 
               <div>
                 <p className="font-semibold">
-                  {curr.theatre?.name}
+                  {curr.theater?.theaterDetails?.name}
                 </p>
                 <p className="text-sm text-gray-500">
-                  Allows Cancellation
+                  {curr.theater?.theaterDetails?.location}
                 </p>
               </div>
             </div>
 
             <div className="flex flex-wrap gap-3 ml-11">
-              {curr.shows?.map((slot, j) => (
-                <button
-                  key={j}
-                  className="border px-3 py-1 rounded-lg text-sm hover:bg-gray-100"
-                >
-                  {slot.startTime} — {slot.audioType}
-                </button>
-              ))}
+              {curr.theater?.shows?.map((slot, j) => {
+                const theaterId = curr.theater.theaterDetails._id;
+
+                // ✅ format movie name for URL
+                const movieName = curr.movie.title
+                  .toLowerCase()
+                  .replace(/[^a-z0-9 ]/g, "")
+                  .replace(/\s+/g, "-");
+
+                return (
+                  <button
+                    key={j}
+                    onClick={() =>
+                      navigate(
+                        `/movies/${movieId}/${movieName}/${state}/theater/${theaterId}/show/${slot._id}/seat-layout`
+                      )
+                    }
+                    className="border px-3 py-1 rounded-lg text-sm hover:bg-gray-100"
+                  >
+                    {slot.startTime} — {slot.audioType}
+                  </button>
+                );
+              })}
             </div>
           </div>
         ))}

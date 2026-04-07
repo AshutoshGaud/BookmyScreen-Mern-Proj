@@ -20,8 +20,9 @@ export const createShow = async (showData: IShow) => {
 // 2. Get shows by movie, date & location
 export const getShowsByMovieDateLocation = async (
     movieID: string,
-    date: string,
-    location: string
+    location: string,
+    date: string
+
 ) => {
     const query: any = {
         movie: new Types.ObjectId(movieID),
