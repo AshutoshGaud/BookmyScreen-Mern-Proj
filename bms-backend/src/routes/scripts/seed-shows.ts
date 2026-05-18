@@ -1,13 +1,15 @@
-// seed/showSeeder.ts
 import mongoose from "mongoose";
 import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+dayjs.extend(customParseFormat);
+
 import { MovieModel } from "../../modules/movie/movie.model";
 import { TheaterModel } from "../../modules/theater/theater.model";
 import { ShowModel } from "../../show/show.model";
 import { config } from "../../config/config";
-import { generateSeatLayout } from "../../utils/index"
+import { generateSeatLayout } from "../../utils/index";
 
-
+// 💰 Price Map
 const generatePriceMap = () =>
   new Map([
     ["PREMIUM", 510],
@@ -15,9 +17,10 @@ const generatePriceMap = () =>
     ["NORMAL", 270],
   ]);
 
+// 🎬 Formats
 const formats = ["2D", "3D", "IMAX", "PVR PXL"];
 
-// 🎞️ Realistic time slots
+// ⏰ Fixed time slots
 const fixedTimeSlots = [
   { start: "09:00 AM", end: "11:30 AM" },
   { start: "12:30 PM", end: "03:00 PM" },
@@ -26,20 +29,12 @@ const fixedTimeSlots = [
   { start: "10:30 PM", end: "01:00 AM" },
 ];
 
-const toDateWithTime = (baseDate: Date, timeStr: string) => {
-  return dayjs(baseDate)
-    .hour(dayjs(timeStr, ["hh:mm A"]).hour())
-    .minute(dayjs(timeStr, ["hh:mm A"]).minute())
-    .second(0)
-    .toDate();
-};
-
 export const seedShow = async () => {
   const movies = await MovieModel.find({});
   const theatres = await TheaterModel.find({});
 
   if (!movies.length || !theatres.length) {
-    console.error("Movies or theatres not found in DB.");
+    console.error("❌ Movies or theatres not found in DB.");
     return;
   }
 
@@ -47,13 +42,16 @@ export const seedShow = async () => {
 
   for (const movie of movies) {
     for (const theatre of theatres) {
-      for (let d = 0; d < 2; d++) {
+
+      // 🔥 8 days (today + next 7 days)
+      for (let d = 0; d < 30; d++) {
+
         const showDate = today.add(d, "day");
         const formattedDate = showDate.format("DD-MM-YYYY");
-        const numShows = Math.floor(Math.random() * 3) + 2;
-        const selectedSlots = fixedTimeSlots.slice(0, numShows);
 
-        for (const slot of selectedSlots) {
+        // 🎯 All slots (no missing)
+        for (const slot of fixedTimeSlots) {
+
           const newShow = new ShowModel({
             movie: movie._id,
             theater: theatre._id,
@@ -61,14 +59,15 @@ export const seedShow = async () => {
             format: formats[Math.floor(Math.random() * formats.length)],
             audioType: "Dolby 7.1",
             startTime: slot.start,
-            date: formattedDate,
+            date: formattedDate, // ⚠️ IMPORTANT (DD-MM-YYYY)
             priceMap: generatePriceMap(),
             seatLayout: generateSeatLayout(),
           });
 
           await newShow.save();
+
           console.log(
-            `🎬 Show created for ${movie.title} at ${theatre.name} on ${formattedDate} (${slot.start} - ${slot.end})`
+            `🎬 ${movie.title} | ${theatre.name} | ${formattedDate} | ${slot.start}`
           );
         }
       }
@@ -78,14 +77,19 @@ export const seedShow = async () => {
   console.log("✅ Show seeding completed successfully.");
 };
 
-
+// 🚀 RUN SCRIPT
 mongoose
   .connect(config.databaseUrl as string)
   .then(async () => {
-    console.log("DB connected");
+    console.log("✅ DB connected");
+
+    // 🧹 Purana data delete
     await ShowModel.deleteMany({});
-    console.log("🧹 Existing shows deleted.");
+    console.log("🗑 Old shows deleted");
+
     await seedShow();
-    mongoose.disconnect();
+
+    await mongoose.disconnect();
+    console.log("🔌 DB disconnected");
   })
-  .catch((err) => console.log(err));
+  .catch((err) => console.log("❌ DB Error:", err));

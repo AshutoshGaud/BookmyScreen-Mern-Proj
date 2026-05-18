@@ -9,29 +9,30 @@ dotenv.config();
 
 const app = express();
 
+// 🔥 MUST BE FIRST (IMPORTANT FIX)
 app.use(
   cors({
+    origin: "http://localhost:5173",
     credentials: true,
-    origin: ["http://localhost:5173"],
   })
 );
-app.use(cookieParser());
+
+// 🔥 BODY + COOKIE PARSER
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
+// 🔥 ROUTES
+app.use("/api/v1", router);
 
-//ALL ROUTES
-app.use("/api/v1/", router);
-
-
-
-
-// Global error handler (MUST be after all routes)
-app.use(globalErrorHandler);
-
+// Home route
 app.get("/", (_, res) => {
   res.json({
-    message: "Welcome to  BookMyScreen API",
+    message: "Welcome to BookMyScreen API",
   });
 });
+
+// Global error handler (LAST)
+app.use(globalErrorHandler);
 
 export default app;

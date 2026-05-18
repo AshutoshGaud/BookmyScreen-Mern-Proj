@@ -7,9 +7,9 @@ import MovieDetails from "./pages/MovieDetails";
 import Profile from "./pages/profile";
 import SeatLayout from "./pages/SeatLayout";
 import Checkout from "./pages/Checkout";
+import { Toaster } from "react-hot-toast";
 
 function App() {
-
   const location = useLocation();
 
   // 🔥 Hide header/footer on these pages
@@ -18,36 +18,46 @@ function App() {
     location.pathname.includes("checkout");
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          style: {
+            fontSize: "14px",
+          },
+        }}
+      />
 
-      {!hideLayout && <Header />}
+      <div className="flex flex-col min-h-screen">
+        {!hideLayout && <Header />}
 
-      <main className="flex-grow">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/movies" element={<Movies />} />
+        <main className="flex-grow">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/movies" element={<Movies />} />
 
-          {/* Movie Details */}
-          <Route
-            path="/movies/:state/:movieName/:movieId/ticket"
-            element={<MovieDetails />}
-          />
+            {/* Movie Details */}
+            <Route
+              path="/movies/:state/:movieName/:movieId/ticket"
+              element={<MovieDetails />}
+            />
 
-          <Route path="/profile" element={<Profile />} />
+            <Route path="/profile" element={<Profile />} />
 
-          {/* Seat Layout */}
-          <Route
-            path="/movies/:movieId/:movieName/:state/theater/:theaterId/show/:showId/seat-layout"
-            element={<SeatLayout />}
-          />
+            {/* Seat Layout */}
+            <Route
+              path="/movies/:movieId/:movieName/:state/theater/:theaterId/show/:showId/seat-layout"
+              element={<SeatLayout />}
+            />
 
-          {/* Checkout */}
-          <Route path="/checkout" element={<Checkout />} />
-        </Routes>
-      </main>
+            {/* Checkout */}
+            <Route path="/checkout" element={<Checkout />} />
+          </Routes>
+        </main>
 
-      {!hideLayout && <Footer />}
-    </div>
+        {!hideLayout && <Footer />}
+      </div>
+    </>
   );
 }
 

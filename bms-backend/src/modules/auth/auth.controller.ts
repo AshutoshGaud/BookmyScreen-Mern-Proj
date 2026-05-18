@@ -26,7 +26,9 @@ export const sendOtp = async (
 
     const ttl = 1000 * 60 * 2;
     const expires = Date.now() + ttl;
+
     const data = `${email}.${otp}.${expires}`;
+
     const hashedOTP = OtpService.hashOTP(data);
 
     await OtpService.sendOTPEmail(email, otp);
@@ -38,6 +40,7 @@ export const sendOtp = async (
     });
 
   } catch (error) {
+    console.log("SEND OTP ERROR:", error);
     next(error);
   }
 };
@@ -49,55 +52,89 @@ export const verifyOTP = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+
+    console.log("VERIFY OTP REQ BODY:", req.body);
+
     const { email, otp, hash } = req.body;
 
     if (!email || !otp || !hash) {
       return next(new createHttpError.BadRequest("All fields are required"));
     }
 
-    const [hashedOTP, expires] = hash.split(".");
+    const lastDotIndex = hash.lastIndexOf(".");
+
+    const hashedOTP = hash.slice(0, lastDotIndex);
+    const expires = hash.slice(lastDotIndex + 1);
 
     if (Date.now() > Number(expires)) {
       return next(new createHttpError.Gone("OTP expired"));
     }
 
     const data = `${email}.${otp}.${expires}`;
+
     const isValid = OtpService.verifyOTP(hashedOTP, data);
+
+    console.log("IS VALID:", isValid);
 
     if (!isValid) {
       return next(new createHttpError.Unauthorized("Invalid OTP"));
     }
 
+    // FIND USER
     let user = await UserService.getUserByEmail(email);
 
+    // CREATE USER IF NOT EXISTS
     if (!user) {
-      user = await UserService.createUser({ email } as any);
+      user = await UserService.createUser({
+        email,
+        name: "New User",
+      } as any);
     }
 
     if (!user || !user._id) {
-      return next(new createHttpError.InternalServerError("User creation failed"));
+      return next(
+        new createHttpError.InternalServerError("User creation failed")
+      );
     }
 
-    const { accessToken, refreshToken } = TokenService.generateToken({
-      _id: user._id.toString(),
-      email: user.email,
-    });
+    // GENERATE TOKENS
+    const { accessToken, refreshToken } =
+      TokenService.generateToken({
+        _id: user._id.toString(),
+        email: user.email,
+      });
 
-    await TokenService.storeRefreshToken(user._id.toString(), refreshToken);
+    // STORE REFRESH TOKEN
+    await TokenService.storeRefreshToken(
+      user._id.toString(),
+      refreshToken
+    );
 
+    // SET COOKIES
     res.cookie("accessToken", accessToken, {
-      maxAge: 1000 * 60 * 60,
-      httpOnly: true,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      secure: process.env.NODE_ENV === "production",
-    });
+  httpOnly: true,
+  secure: false,
+  sameSite: "lax",
+  maxAge: 1000 * 60 * 60,
+});
 
-    res.cookie("refreshToken", refreshToken, {
-      maxAge: 1000 * 60 * 60 * 24 * 7,
-      httpOnly: true,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      secure: process.env.NODE_ENV === "production",
-    });
+res.cookie("accessToken", accessToken, {
+  httpOnly: true,
+  secure: false, // localhost
+  sameSite: "lax",
+  path: "/",
+  maxAge: 1000 * 60 * 60,
+});
+
+res.cookie("refreshToken", refreshToken, {
+  httpOnly: true,
+  secure: false,
+  sameSite: "lax",
+  path: "/",
+  maxAge: 1000 * 60 * 60 * 24 * 7,
+});
+
+    console.log("OTP VERIFIED SUCCESSFULLY");
 
     res.status(200).json({
       auth: true,
@@ -105,6 +142,7 @@ export const verifyOTP = async (
     });
 
   } catch (error) {
+    console.log("VERIFY OTP ERROR:", error);
     next(error);
   }
 };
@@ -116,6 +154,7 @@ export const logout = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+
     const { refreshToken } = req.cookies;
 
     if (refreshToken) {
@@ -130,6 +169,7 @@ export const logout = async (
     });
 
   } catch (error) {
+    console.log("LOGOUT ERROR:", error);
     next(error);
   }
 };

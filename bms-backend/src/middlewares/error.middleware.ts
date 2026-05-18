@@ -1,34 +1,37 @@
-// src/middlewares/error.middleware.ts
 import { Request, Response, NextFunction } from "express";
-import { ZodError } from "zod"; // ✅ ye import missing tha
+import { ZodError } from "zod";
 
 export const globalErrorHandler = (
-  err: unknown,
+  err: any,
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  // Default Response
-  let statusCode = 500;
-  let message = "Something went wrong!";
+
+  console.log("GLOBAL ERROR:", err);
+
+  let statusCode = err.status || err.statusCode || 500;
+
+  let message = err.message || "Something went wrong!";
+
   let error: { field?: string; message: string }[] = [];
 
-  // ✅ Zod Error Handling
+  // Zod Error
   if (err instanceof ZodError) {
     statusCode = 400;
+
     message = "Validation Error";
+
     error = err.errors.map((e: any) => ({
       field: e.path.join("."),
       message: e.message,
     }));
-  } else if (err instanceof Error) {
-    message = err.message;
   }
 
-  // ✅ Always send a proper JSON response
   res.status(statusCode).json({
     success: false,
     message,
     error,
+    stack: err.stack,
   });
 };

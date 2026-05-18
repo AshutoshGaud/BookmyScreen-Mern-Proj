@@ -1,19 +1,24 @@
 import { useRef, useState } from "react";
 import { IoClose } from "react-icons/io5";
 import { useCountdown } from "../../hooks/useCountdown";
+import { useAuth } from "../../context/AuthContext";
 
 const StepOtp = ({ onNext }) => {
   const [otpArray, setOtpArray] = useState(new Array(4).fill(""));
   const inputRef = useRef([]);
+  const { verifyOtpRequest } = useAuth();
 
   const { displayTime, isExpired } = useCountdown({
     initialTimeInSeconds: 2 * 60,
   });
 
   const handleVerifyOtp = (e) => {
-    e.preventDefault();
-    onNext();
-  };
+  e.preventDefault();
+
+  const otp = otpArray.join("");
+
+  verifyOtpRequest(otp, onNext);
+};
 
   const handleResendOtp = (e) => {
     e.preventDefault();
@@ -35,6 +40,11 @@ const StepOtp = ({ onNext }) => {
       inputRef.current[index + 1].focus();
     }
   };
+
+  const handleClearOtp = () => {
+    setOtpArray(new Array(4).fill(""));
+    inputRef.current[0].focus();
+  }
 
   return (
     <div className="flex flex-col gap-3 px-10 py-6">
@@ -60,7 +70,7 @@ const StepOtp = ({ onNext }) => {
           />
         ))}
 
-        <button
+        <button onClick={handleClearOtp}
           type="button"
           className="w-8 h-8 ml-1 border border-gray-200 text-[#f74565] font-bold rounded-md"
         >

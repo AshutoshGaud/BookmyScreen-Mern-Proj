@@ -17,28 +17,34 @@ interface TokenPayload extends JwtPayload{
     id: string;
 }
 
-export const isVerfiedUser = async (req: Request, res: Response, next: NextFunction) =>{
-    try{
+export const isVerfiedUser = async (req: Request, res: Response, next: NextFunction) => {
+  try {
 
-        const { accessToken } = req.cookies;
+    console.log("🔥 COOKIE DEBUG:", req.cookies); // 👈 ADD THIS
 
-        if(!accessToken){
-            return next(createHttpError(401, "Access token is missing"));
-        }
+    const token = req.cookies?.accessToken;
 
-        const decodedToken = await TokenService.verifyAccessToken(accessToken) as TokenPayload;
-        console.log(decodedToken);
-        console.log(decodedToken._id);
-        const user = await UserService.getUserById(decodedToken._id);
+    console.log("🔥 TOKEN DEBUG:", token); // 👈 ADD THIS
 
-        if (!user) {
-            return next(createHttpError(404, "user not found"));
-        }
-
-        req.user = user;
-        next();
-
-    } catch (error) {
-        return next(createHttpError(401, "Invalid or expired token"));
+    if (!token) {
+      return next(createHttpError(401, "Access token is missing"));
     }
-}
+
+    const decodedToken = TokenService.verifyAccessToken(token) as any;
+
+    console.log("🔥 DECODED TOKEN:", decodedToken); // 👈 ADD THIS
+
+    const user = await UserService.getUserById(decodedToken._id);
+
+    if (!user) {
+      return next(createHttpError(404, "User not found"));
+    }
+
+    req.user = user;
+    next();
+
+  } catch (error) {
+    console.log("❌ AUTH ERROR:", error); // 👈 ADD THIS
+    return next(createHttpError(401, "Invalid or expired token"));
+  }
+};

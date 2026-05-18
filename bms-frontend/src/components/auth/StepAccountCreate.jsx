@@ -1,12 +1,27 @@
 import { useState } from "react";
+import { useAuth } from "../../context/AuthContext"; // ✅ import add karo
 
 const StepAccountCreate = () => {
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState(""); // ✅ fixed
+  const [phone, setPhone] = useState("");
+
+  // ✅ hook hamesha component ke andar
+  const { activateUserRequest } = useAuth();
 
   const handleActivateAccount = (e) => {
     e.preventDefault();
-    console.log(name, phone);
+
+    if (!name || !phone) return;
+
+    activateUserRequest(
+      {
+        name,
+        phone,
+      },
+      () => {
+        console.log("Account created");
+      }
+    );
   };
 
   return (
@@ -19,7 +34,6 @@ const StepAccountCreate = () => {
         If you don't have an account, we'll create one for you.
       </p>
 
-      {/* Name Input */}
       <div className="flex items-center border rounded-md border-gray-300 px-4 py-3">
         <input
           type="text"
@@ -27,11 +41,9 @@ const StepAccountCreate = () => {
           onChange={(e) => setName(e.target.value)}
           placeholder="Enter your name"
           className="flex-grow outline-none text-base"
-          required
         />
       </div>
 
-      {/* Phone Input */}
       <div className="flex items-center border rounded-md border-gray-300 px-4 py-3">
         <input
           type="tel"
@@ -39,7 +51,6 @@ const StepAccountCreate = () => {
           onChange={(e) => setPhone(e.target.value)}
           placeholder="Enter your phone"
           className="flex-grow outline-none text-base"
-          required
         />
       </div>
 
@@ -50,18 +61,6 @@ const StepAccountCreate = () => {
       >
         Create Account
       </button>
-
-      <p className="text-[#c4c5c5] text-center m-auto text-[12px]">
-        By entering your details, you're agreeing to our{" "}
-        <a href="#" className="text-[#f74565]">
-          Terms of Service
-        </a>{" "}
-        and{" "}
-        <a href="#" className="text-[#f74565]">
-          Privacy Policy
-        </a>
-        . Thanks!
-      </p>
     </div>
   );
 };
